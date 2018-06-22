@@ -10,7 +10,7 @@ ang_qtz = Quantizer(-0.30, 0.30, 100)  # -12 to 12 degree is -0.20944 to 0.20944
 (dist, v1, ang, v2) = (0, 0, 0, 0)
 
 env = gym.make('CartPole-v0')
-learner = QLearningAgent(env, 0.2, 0.8)
+learner = QLearningAgent(env, 0.2, 0.8, 0.4)
 
 # Learning
 reward_list = []
@@ -43,6 +43,7 @@ for i_episode in range(10000):
 print('Best learning reward: ', max(reward_list))
 
 # Testing
+learner.set_epsilon(0)  # turn off exploration
 reward_list = []
 for i_episode in range(10):
     observation = env.reset()
