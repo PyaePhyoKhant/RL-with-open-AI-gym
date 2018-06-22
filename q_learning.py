@@ -20,4 +20,13 @@ class QLearningAgent:
         self.values[(old_state, action)] = (1 - self.alpha) * self.values[(old_state, action)] + self.alpha * sample_value
 
     def get_action(self, state):
-        return 1
+        max_actions = []
+        max_value = float('-inf')
+        for action in range(self.env.action_space.n):
+            q = self.values[(state, action)]
+            if q == max_value:
+                max_actions.append(action)
+            elif q > max_value:
+                max_actions = [action]
+                max_value = q
+        return random.choice(max_actions)
