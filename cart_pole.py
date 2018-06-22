@@ -11,12 +11,12 @@ MAX_RAD = 0.21
 MAX_CART_VEL = 2.0
 MAX_TIP_VEL = 2.0
 LEARNING_EPISODES = 10000
-TESTING_EPISODES = 10
+TESTING_EPISODES = 100
 LEARNING_RATE = 0.2
 DISCOUNT = 0.9
 EXPLORATION = 0.5
 BINS = 100
-ANIMATION = True
+ANIMATION = False
 
 ang_qtz = Quantizer(-MAX_RAD, MAX_RAD, BINS)  # -12 to 12 degree is -0.20944 to 0.20944 in radians
 cart_qtz = Quantizer(-MAX_CART_VEL, MAX_CART_VEL, BINS)
@@ -55,6 +55,7 @@ for _ in range(LEARNING_EPISODES):
         next_state = extract_state((dist, cart_vel, ang, tip_vel))
 
         # update learner
+        reward -= abs(ang) * 10  # this increase average score significantly
         learner.update(old_state, action, next_state, reward)
 
         total_reward += reward
