@@ -4,17 +4,27 @@ import time
 from quantizer import Quantizer
 from q_learning import QLearningAgent
 
-dist_qtz = Quantizer(-2.5, 2.5, 1700)  # 1700 bins so that -0.14 to 0.14 have 100 bins
-ang_qtz = Quantizer(-0.30, 0.30, 100)  # -12 to 12 degree is -0.20944 to 0.20944 in radians
+
+# important global parameters
+MAX_DIST = 2.5
+MAX_RAD = 0.3
+LEARNING_EPISODES = 10000
+TRAINING_EPISODES = 10
+LEARNING_RATE = 0.2
+DISCOUNT = 0.8
+EXPLORATION = 0.2
+
+dist_qtz = Quantizer(-MAX_DIST, MAX_DIST, 1700)  # 1700 bins so that -0.14 to 0.14 have 100 bins
+ang_qtz = Quantizer(-MAX_RAD, MAX_RAD, 100)  # -12 to 12 degree is -0.20944 to 0.20944 in radians
 
 (dist, v1, ang, v2) = (0, 0, 0, 0)
 
 env = gym.make('CartPole-v0')
-learner = QLearningAgent(env, 0.2, 0.8, 0.4)
+learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION)
 
 # Learning
 reward_list = []
-for i_episode in range(10000):
+for i_episode in range(LEARNING_EPISODES):
     observation = env.reset()
     (dist, v1, ang, v2) = observation
     dist = dist_qtz.round(dist)
@@ -45,7 +55,7 @@ print('Best learning reward: ', max(reward_list))
 # Testing
 learner.set_epsilon(0)  # turn off exploration
 reward_list = []
-for i_episode in range(10):
+for i_episode in range(TRAINING_EPISODES):
     observation = env.reset()
     (dist, v1, ang, v2) = observation
     dist = dist_qtz.round(dist)
