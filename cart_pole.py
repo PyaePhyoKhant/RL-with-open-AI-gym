@@ -7,15 +7,16 @@ from q_learning import QLearningAgent
 
 # important global parameters
 MAX_DIST = 2.5
-MAX_RAD = 0.3
-MAX_CART_VEL = 3.5
-MAX_TIP_VEL = 3.5
+MAX_RAD = 0.21
+MAX_CART_VEL = 2.0
+MAX_TIP_VEL = 2.0
 LEARNING_EPISODES = 10000
-TESTING_EPISODES = 100
+TESTING_EPISODES = 10
 LEARNING_RATE = 0.2
-DISCOUNT = 0.8
-EXPLORATION = 0.2
-BINS = 300
+DISCOUNT = 0.9
+EXPLORATION = 0.5
+BINS = 100
+ANIMATION = True
 
 ang_qtz = Quantizer(-MAX_RAD, MAX_RAD, BINS)  # -12 to 12 degree is -0.20944 to 0.20944 in radians
 cart_qtz = Quantizer(-MAX_CART_VEL, MAX_CART_VEL, BINS)
@@ -36,7 +37,7 @@ def extract_state(obs):
     ang = ang_qtz.round(ang)
     cart_vel = cart_qtz.round(cart_vel)
     tip_vel = tip_qtz.round(tip_vel)
-    return ang, cart_vel, tip_vel
+    return ang, cart_vel
 
 # Learning
 reward_list = []
@@ -70,7 +71,9 @@ for _ in range(TESTING_EPISODES):
     env.reset()
     total_reward = 0
     for _ in range(1000):
-        # env.render()
+        if ANIMATION:
+            env.render()
+            time.sleep(0.1)
 
         # get action
         old_state = extract_state((dist, cart_vel, ang, tip_vel))
@@ -79,7 +82,6 @@ for _ in range(TESTING_EPISODES):
         # one step
         observation, reward, done, info = env.step(action)
         (dist, cart_vel, ang, tip_vel) = observation
-        next_state = extract_state((dist, cart_vel, ang, tip_vel))
 
         # time.sleep(0.1)
         total_reward += reward
