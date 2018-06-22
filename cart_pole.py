@@ -9,7 +9,7 @@ from q_learning import QLearningAgent
 MAX_DIST = 2.5
 MAX_RAD = 0.3
 LEARNING_EPISODES = 10000
-TRAINING_EPISODES = 10
+TESTING_EPISODES = 10
 LEARNING_RATE = 0.2
 DISCOUNT = 0.8
 EXPLORATION = 0.2
@@ -55,7 +55,7 @@ print('Best learning reward: ', max(reward_list))
 # Testing
 learner.set_epsilon(0)  # turn off exploration
 reward_list = []
-for i_episode in range(TRAINING_EPISODES):
+for i_episode in range(TESTING_EPISODES):
     observation = env.reset()
     (dist, v1, ang, v2) = observation
     dist = dist_qtz.round(dist)
