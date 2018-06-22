@@ -1,3 +1,6 @@
+import random
+
+
 class Quantizer:
     """
     quantize value range.
@@ -54,7 +57,9 @@ class Quantizer:
         """
         # FIXME: this is having float imprecision problem
         if value < self.start or value > self.end:
-            raise IndexError
+            random_index = random.choice(range(self.bins))
+            v_random = self.start + self.step * random_index
+            return v_random
         else:
             idx = self.index(value)
             v1 = self.start + self.step * idx
