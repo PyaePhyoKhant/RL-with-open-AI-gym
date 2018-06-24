@@ -31,6 +31,7 @@ class Quantizer:
     >> q.round(0.18)
     This one have float imprecision problem for now
     """
+
     def __init__(self, start, end, bins):
         self.start = start
         self.end = end
@@ -71,3 +72,14 @@ class Quantizer:
             else:
                 return float(v1)
 
+    def as_list(self):
+        """
+        return quantized list
+        >>> q = Quantizer(-2.0, 2, 4)
+        >>> q.as_list()
+        [-2.0, -1.0, 0.0, 1.0]
+        """
+        lst = []
+        for i in range(self.bins):
+            lst.append(self.start + self.step * i)
+        return lst

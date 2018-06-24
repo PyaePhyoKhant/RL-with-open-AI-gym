@@ -24,7 +24,7 @@ vel_qtz = Quantizer(MIN_VEL, MAX_VEL, BINS)
 (pos, vel) = (0, 0)
 
 env = gym.make('MountainCar-v0')
-learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION)
+learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n))
 
 
 def extract_state(obs):

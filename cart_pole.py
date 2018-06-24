@@ -25,7 +25,7 @@ tip_qtz = Quantizer(-MAX_TIP_VEL, MAX_TIP_VEL, BINS)
 (dist, cart_vel, ang, tip_vel) = (0, 0, 0, 0)
 
 env = gym.make('CartPole-v0')
-learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION)
+learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n))
 
 
 def extract_state(obs):
