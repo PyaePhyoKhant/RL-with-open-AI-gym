@@ -8,7 +8,7 @@ from q_learning import QLearningAgent
 MAX_COS_THETA = 1.0
 MAX_SIN_THETA = 1.0
 MAX_THETA_DOT = 8.0
-LEARNING_EPISODES = 4000
+LEARNING_EPISODES = 5000
 TESTING_EPISODES = 10
 LEARNING_RATE = 0.2
 DISCOUNT = 0.9
@@ -65,7 +65,7 @@ for iep in range(LEARNING_EPISODES):
 learner.set_epsilon(0)  # turn off exploration
 for _ in range(TESTING_EPISODES):
     env.reset()
-    for _ in range(50000):
+    for _ in range(100000):
         if ANIMATION:
             env.render()
 
