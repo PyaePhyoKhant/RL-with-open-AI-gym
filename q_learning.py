@@ -31,7 +31,7 @@ class QLearningAgent:
         else:
             max_actions = []
             max_value = float('-inf')
-            for action in range(self.env.action_space.n):
+            for action in self.actions:
                 q = self.values[(state, action)]
                 if q == max_value:
                     max_actions.append(action)
