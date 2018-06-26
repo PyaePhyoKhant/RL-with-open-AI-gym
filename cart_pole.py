@@ -1,22 +1,22 @@
-import gym
-import gym.spaces
 import time
-from quantizer import Quantizer
-from q_learning import QLearningAgent
 
+import gym.spaces
+
+from helpers.q_learning import QLearningAgent
+from helpers.quantizer import Quantizer
 
 # important global parameters
 MAX_DIST = 2.5
 MAX_RAD = 0.21
 MAX_CART_VEL = 2.0
 MAX_TIP_VEL = 2.0
-LEARNING_EPISODES = 5000
+LEARNING_EPISODES = 1000
 TESTING_EPISODES = 100
 LEARNING_RATE = 0.2
 DISCOUNT = 0.9
 EXPLORATION = 0.2
 BINS = 20
-ANIMATION = False
+ANIMATION = True
 
 ang_qtz = Quantizer(-MAX_RAD, MAX_RAD, BINS)  # -12 to 12 degree is -0.20944 to 0.20944 in radians
 cart_qtz = Quantizer(-MAX_CART_VEL, MAX_CART_VEL, BINS)
@@ -40,7 +40,7 @@ def extract_state(obs):
     return ang, cart_vel
 
 # Learning
-reward_list = []
+reward_list = [0]   # 0 is to avoid error when LEARNING_EPISODES is zero
 for _ in range(LEARNING_EPISODES):
     env.reset()
     total_reward = 0
@@ -55,7 +55,7 @@ for _ in range(LEARNING_EPISODES):
         next_state = extract_state((dist, cart_vel, ang, tip_vel))
 
         # update learner
-        # reward -= abs(ang) * 10  # this increase average score significantly
+        reward -= abs(ang) * 10  # this increase average score significantly
         learner.update(old_state, action, next_state, reward)
 
         total_reward += reward

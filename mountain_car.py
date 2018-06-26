@@ -1,19 +1,20 @@
-import gym.spaces
 import time
-from quantizer import Quantizer
-from q_learning import QLearningAgent
 
+import gym.spaces
+
+from helpers.q_learning import QLearningAgent
+from helpers.quantizer import Quantizer
 
 # important global parameters
 MAX_POS = 0.6
 MIN_POS = -1.2
 MAX_VEL = 0.07
 MIN_VEL = -0.07
-LEARNING_EPISODES = 1500
+LEARNING_EPISODES = 2500
 TESTING_EPISODES = 100
 LEARNING_RATE = 0.2
 DISCOUNT = 0.9
-EXPLORATION = 0.2
+EXPLORATION = 0.3
 BINS = 20
 ANIMATION = True
 TIME_LIMIT = 200    # robot should reach goal after 200 time steps
@@ -38,9 +39,11 @@ def extract_state(obs):
     return pos, vel
 
 # Learning
-for _ in range(LEARNING_EPISODES):
+for i_episode in range(LEARNING_EPISODES):
     env.reset()
     total_reward = 0
+    if i_episode % 500 == 0:
+        print(str(i_episode) + '/' + str(LEARNING_EPISODES) + ' training episodes complete')
     for _ in range(TIME_LIMIT):
         # get action
         old_state = extract_state((pos, vel))
@@ -65,7 +68,6 @@ for _ in range(TESTING_EPISODES):
     for t in range(TIME_LIMIT):
         if ANIMATION:
             env.render()
-            time.sleep(0.1)
 
         # get action
         old_state = extract_state((pos, vel))

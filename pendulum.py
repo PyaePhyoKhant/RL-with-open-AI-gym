@@ -1,20 +1,22 @@
-import gym.spaces
 import time
-from quantizer import Quantizer
-from q_learning import QLearningAgent
-
+import gym.spaces
+from helpers.q_learning import QLearningAgent
+from helpers.quantizer import Quantizer
+import pickle
 
 # important global parameters
 MAX_COS_THETA = 1.0
 MAX_SIN_THETA = 1.0
 MAX_THETA_DOT = 8.0
-LEARNING_EPISODES = 5000
+LEARNING_EPISODES = 1000
 TESTING_EPISODES = 10
 LEARNING_RATE = 0.2
 DISCOUNT = 0.9
-EXPLORATION = 0.2
+EXPLORATION = 0.3
 BINS = 10
 ANIMATION = True
+# set True when skipping learning phase and load knowledge from external with 5000 LEARNING_EPISODES
+USE_EXTERNAL = False
 
 cos_qtz = Quantizer(-MAX_COS_THETA, MAX_COS_THETA, BINS)
 sin_qtz = Quantizer(-MAX_SIN_THETA, MAX_SIN_THETA, BINS)
@@ -39,10 +41,10 @@ def extract_state(obs):
     return c, s, d
 
 # Learning
-for iep in range(LEARNING_EPISODES):
+for i_episode in range(LEARNING_EPISODES):
     env.reset()
-    if iep % 500 == 0:
-        print(iep)
+    if i_episode % 500 == 0:
+        print(str(i_episode) + '/' + str(LEARNING_EPISODES) + ' training episodes complete')
     for _ in range(1000):
         # get action
         old_state = extract_state((c, s, d))
@@ -60,6 +62,12 @@ for iep in range(LEARNING_EPISODES):
 
         if done:
             break
+
+# if USE_EXTERNAL==True, use knowledge with 5000 LEARNING_EPISODES
+if USE_EXTERNAL:
+    print("Skipping learning and load knowledge from external")
+    with open('pendulum_knowledge.txt', 'rb') as f:
+        learner.values = pickle.load(f)
 
 # Testing
 learner.set_epsilon(0)  # turn off exploration
