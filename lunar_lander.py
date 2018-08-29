@@ -4,14 +4,15 @@ from helpers.q_learning import QLearningAgent
 from helpers.quantizer import Quantizer
 
 # important global parameters
-MAX_X = 0.25
-MIN_X = -0.25
-MAX_Y = 1.0
-MIN_Y = 0.0
-MAX_VEL = 1.59
-MAX_UN1 = 3.0
-MAX_UN2 = 5.0
-LEARNING_EPISODES = 1000
+MAX_X = 0.3
+MIN_X = -0.3
+MAX_Y = 1
+MIN_Y = 0
+MAX_X_VEL = 1
+MIN_X_VEL = -1
+MAX_Y_VEL = 0.5
+MIN_Y_VEL = -1.5
+MAX_UN = 1
 TESTING_EPISODES = 100
 LEARNING_RATE = 0.2
 DISCOUNT = 0.95
@@ -21,10 +22,10 @@ ANIMATION = False
 
 x_qtz = Quantizer(MIN_X, MAX_X, BINS)
 y_qtz = Quantizer(MIN_Y, MAX_Y, BINS)
-x_vel_qtz = Quantizer(-MAX_VEL, MAX_VEL, BINS)
-y_vel_qtz = Quantizer(-MAX_VEL, MAX_VEL, BINS)
-un1_qtz = Quantizer(-MAX_UN1, MAX_UN1, BINS)
-un2_qtz = Quantizer(-MAX_UN2, MAX_UN2, BINS)
+x_vel_qtz = Quantizer(MIN_X_VEL, MAX_X_VEL, BINS)
+y_vel_qtz = Quantizer(MIN_Y_VEL, MAX_Y_VEL, BINS)
+un1_qtz = Quantizer(-MAX_UN, MAX_UN, BINS)
+un2_qtz = Quantizer(-MAX_UN, MAX_UN, BINS)
 
 (x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = (0, 0, 0, 0, 0, 0, 0, 0)
 
