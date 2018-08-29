@@ -17,7 +17,7 @@ DISCOUNT = 0.9
 EXPLORATION = 0.3
 BINS = 20
 ANIMATION = True
-TIME_LIMIT = 200    # robot should reach goal after 200 time steps
+TIME_LIMIT = 200  # robot should reach goal after 200 time steps
 
 pos_qtz = Quantizer(MIN_POS, MAX_POS, BINS)
 vel_qtz = Quantizer(MIN_VEL, MAX_VEL, BINS)
@@ -25,7 +25,7 @@ vel_qtz = Quantizer(MIN_VEL, MAX_VEL, BINS)
 (pos, vel) = (0, 0)
 
 env = gym.make('MountainCar-v0')
-learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n))
+learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n), (BINS, BINS, env.action_space.n))
 
 
 def extract_state(obs):
@@ -34,9 +34,10 @@ def extract_state(obs):
     :param obs: gym observation
     """
     (pos, vel) = obs
-    pos = pos_qtz.round(pos)
-    vel = vel_qtz.round(vel)
+    pos = pos_qtz.value_to_index(pos)
+    vel = vel_qtz.value_to_index(vel)
     return pos, vel
+
 
 # Learning
 for i_episode in range(LEARNING_EPISODES):
@@ -78,7 +79,7 @@ for _ in range(TESTING_EPISODES):
         (pos, vel) = observation
 
         if done:
-            if t < TIME_LIMIT-1:
+            if t < TIME_LIMIT - 1:
                 print('success')
             else:
                 print('fail')

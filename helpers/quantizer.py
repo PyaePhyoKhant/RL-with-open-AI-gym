@@ -47,10 +47,11 @@ class Quantizer:
         return which index(bin) value belong to
         """
         if value < self.start or value > self.end:
-            raise IndexError
-        else:
-            moved_value = abs(value - self.start)
-            return int(moved_value // self.step)
+            value = self.start
+        elif value > self.end:
+            value = self.end
+        moved_value = abs(value - self.start)
+        return int(moved_value // self.step)
 
     def round(self, value):
         """
@@ -71,6 +72,16 @@ class Quantizer:
                 return float(v2)
             else:
                 return float(v1)
+
+    def value_to_index(self, value):
+        """
+        int key is necessary for numpy.array
+        """
+        v = self.index(self.round(value))
+        if v > self.bins - 1:
+            return self.bins - 1
+        else:
+            return v
 
     def as_list(self):
         """

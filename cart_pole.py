@@ -25,7 +25,7 @@ tip_qtz = Quantizer(-MAX_TIP_VEL, MAX_TIP_VEL, BINS)
 (dist, cart_vel, ang, tip_vel) = (0, 0, 0, 0)
 
 env = gym.make('CartPole-v0')
-learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n))
+learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n), (BINS, BINS, env.action_space.n))
 
 
 def extract_state(obs):
@@ -34,13 +34,14 @@ def extract_state(obs):
     :param obs: gym observation
     """
     (dist, cart_vel, ang, tip_vel) = obs
-    ang = ang_qtz.round(ang)
-    cart_vel = cart_qtz.round(cart_vel)
-    tip_vel = tip_qtz.round(tip_vel)
+    ang = ang_qtz.value_to_index(ang)
+    cart_vel = cart_qtz.value_to_index(cart_vel)
+    tip_vel = tip_qtz.value_to_index(tip_vel)
     return ang, cart_vel
 
+
 # Learning
-reward_list = [0]   # 0 is to avoid error when LEARNING_EPISODES is zero
+reward_list = [0]  # 0 is to avoid error when LEARNING_EPISODES is zero
 for _ in range(LEARNING_EPISODES):
     env.reset()
     total_reward = 0
@@ -63,7 +64,7 @@ for _ in range(LEARNING_EPISODES):
             reward_list.append(total_reward)
             # print("Episode finished after {} timesteps. Reward: {}".format(t + 1, total_reward))
             break
-print('Average learning reward: ', sum(reward_list)/len(reward_list))
+print('Average learning reward: ', sum(reward_list) / len(reward_list))
 
 # Testing
 learner.set_epsilon(0)  # turn off exploration
@@ -90,5 +91,4 @@ for _ in range(TESTING_EPISODES):
             reward_list.append(total_reward)
             # print("Episode finished after {} timesteps. Reward: {}".format(t + 1, total_reward))
             break
-print('Average testing reward: ', sum(reward_list)/len(reward_list))
-
+print('Average testing reward: ', sum(reward_list) / len(reward_list))
