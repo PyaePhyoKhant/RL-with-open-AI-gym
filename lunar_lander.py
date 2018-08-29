@@ -4,27 +4,32 @@ from helpers.q_learning import QLearningAgent
 from helpers.quantizer import Quantizer
 
 # important global parameters
-MAX_X = 0.2
-MIN_X = -0.2
-MAX_Y = 1
-MIN_Y = 0
-MAX_VEL = 1.5
-LEARNING_EPISODES = 2000
+MAX_X = 0.25
+MIN_X = -0.25
+MAX_Y = 1.0
+MIN_Y = 0.0
+MAX_VEL = 1.59
+MAX_UN1 = 3.0
+MAX_UN2 = 5.0
+LEARNING_EPISODES = 1000
 TESTING_EPISODES = 100
 LEARNING_RATE = 0.2
-DISCOUNT = 0.9
+DISCOUNT = 0.95
 EXPLORATION = 0.2
-BINS = 10
-ANIMATION = True
+BINS = 5
+ANIMATION = False
 
-x_qtz = Quantizer(-MIN_X, MAX_X, BINS)
+x_qtz = Quantizer(MIN_X, MAX_X, BINS)
+y_qtz = Quantizer(MIN_Y, MAX_Y, BINS)
 x_vel_qtz = Quantizer(-MAX_VEL, MAX_VEL, BINS)
 y_vel_qtz = Quantizer(-MAX_VEL, MAX_VEL, BINS)
+un1_qtz = Quantizer(-MAX_UN1, MAX_UN1, BINS)
+un2_qtz = Quantizer(-MAX_UN2, MAX_UN2, BINS)
 
 (x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = (0, 0, 0, 0, 0, 0, 0, 0)
 
 env = gym.make('LunarLander-v2')
-learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n))
+learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n), (BINS, BINS, BINS, BINS, BINS, BINS, env.action_space.n))
 
 
 def extract_state(obs):
@@ -33,15 +38,21 @@ def extract_state(obs):
     :param obs: gym observation
     """
     (x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = obs
-    x = x_qtz.round(x)
-    x_vel = x_vel_qtz.round(x_vel)
-    y_vel = y_vel_qtz.round(y_vel)
-    return x, x_vel, y_vel
+    x = x_qtz.value_to_index(x)
+    y = y_qtz.value_to_index(y)
+    x_vel = x_vel_qtz.value_to_index(x_vel)
+    y_vel = y_vel_qtz.value_to_index(y_vel)
+    un1 = un1_qtz.value_to_index(unknown1)
+    un2 = un2_qtz.value_to_index(unknown2)
+    return x, y, x_vel, y_vel, un1, un2
 
 
 # Learning
-reward_list = [0]   # 0 is to avoid error when LEARNING_EPISODES is zero
-for _ in range(LEARNING_EPISODES):
+reward_summation = 0  # 0 is to avoid error when LEARNING_EPISODES is zero
+st = time.time()
+for i_episode in range(LEARNING_EPISODES):
+    if i_episode % 100 == 0:
+        print(str(i_episode) + '/' + str(LEARNING_EPISODES) + ' training episodes complete')
     env.reset()
     total_reward = 0
     for _ in range(1000):
@@ -59,10 +70,11 @@ for _ in range(LEARNING_EPISODES):
 
         total_reward += reward
         if done:
-            reward_list.append(total_reward)
+            reward_summation += total_reward
             # print("Episode finished after {} timesteps. Reward: {}".format(t + 1, total_reward))
             break
-print('Average learning reward: ', sum(reward_list)/len(reward_list))
+print('Average learning reward: ', reward_summation / LEARNING_EPISODES)
+print('time: ', time.time() - st)
 
 # Testing
 learner.set_epsilon(0)  # turn off exploration
@@ -89,5 +101,4 @@ for _ in range(TESTING_EPISODES):
             reward_list.append(total_reward)
             # print("Episode finished after {} timesteps. Reward: {}".format(t + 1, total_reward))
             break
-print('Average testing reward: ', sum(reward_list)/len(reward_list), ' (', TESTING_EPISODES, ' trials)')
-
+print('Average testing reward:', sum(reward_list) / len(reward_list), '(', TESTING_EPISODES, 'trials)')
