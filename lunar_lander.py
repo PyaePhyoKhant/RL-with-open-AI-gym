@@ -13,12 +13,16 @@ MIN_X_VEL = -1
 MAX_Y_VEL = 0.5
 MIN_Y_VEL = -1.5
 MAX_UN = 1
+# special number for legs
+LEG1 = 4
+LEG2 = 5
+LEARNING_EPISODES = 3000
 TESTING_EPISODES = 100
 LEARNING_RATE = 0.2
-DISCOUNT = 0.95
-EXPLORATION = 0.2
-BINS = 5
-ANIMATION = False
+DISCOUNT = 0.9
+EXPLORATION = 0.3
+BINS = 10
+ANIMATION = True
 
 x_qtz = Quantizer(MIN_X, MAX_X, BINS)
 y_qtz = Quantizer(MIN_Y, MAX_Y, BINS)
@@ -30,7 +34,7 @@ un2_qtz = Quantizer(-MAX_UN, MAX_UN, BINS)
 (x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = (0, 0, 0, 0, 0, 0, 0, 0)
 
 env = gym.make('LunarLander-v2')
-learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n), (BINS, BINS, BINS, BINS, BINS, BINS, env.action_space.n))
+learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n))
 
 
 def extract_state(obs):
@@ -39,24 +43,38 @@ def extract_state(obs):
     :param obs: gym observation
     """
     (x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = obs
-    x = x_qtz.value_to_index(x)
-    y = y_qtz.value_to_index(y)
-    x_vel = x_vel_qtz.value_to_index(x_vel)
-    y_vel = y_vel_qtz.value_to_index(y_vel)
-    un1 = un1_qtz.value_to_index(unknown1)
-    un2 = un2_qtz.value_to_index(unknown2)
-    return x, y, x_vel, y_vel, un1, un2
+    # x = x_qtz.round(x)
+    # y = y_qtz.round(y)
+    x_vel = x_vel_qtz.round(x_vel)
+    y_vel = y_vel_qtz.round(y_vel)
+    un1 = un1_qtz.round(unknown1)
+    un2 = un2_qtz.round(unknown2)
+    # if leg1 == 1:
+    #     x = LEG1
+    # if leg2 == 1:
+    #     y = LEG2
+    return leg1, leg2, x_vel, y_vel, un1, un2
 
 
 # Learning
-reward_summation = 0  # 0 is to avoid error when LEARNING_EPISODES is zero
-st = time.time()
-for i_episode in range(LEARNING_EPISODES):
+reward_summation = 0
+last_100_reward = []
+# +1 so that average reward for last 100 episodes is shown
+for i_episode in range(LEARNING_EPISODES+1):
     if i_episode % 100 == 0:
         print(str(i_episode) + '/' + str(LEARNING_EPISODES) + ' training episodes complete')
-    env.reset()
+        print('current avg reward:', sum(last_100_reward) / (len(last_100_reward)+1))
+        last_100_reward = []
+    (x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = env.reset()
     total_reward = 0
     for _ in range(1000):
+        # testing show
+        if i_episode == (LEARNING_EPISODES - 100):
+            learner.set_epsilon(0)
+        if i_episode > (LEARNING_EPISODES - 10):
+            if ANIMATION:
+                env.render()
+
         # get action
         old_state = extract_state((x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2))
         action = learner.get_action(old_state)
@@ -71,35 +89,40 @@ for i_episode in range(LEARNING_EPISODES):
 
         total_reward += reward
         if done:
+            # testing show
+            if i_episode > (LEARNING_EPISODES - 10):
+                if ANIMATION:
+                    print(total_reward)
+
+            last_100_reward.append(total_reward)
             reward_summation += total_reward
             # print("Episode finished after {} timesteps. Reward: {}".format(t + 1, total_reward))
             break
 print('Average learning reward: ', reward_summation / LEARNING_EPISODES)
-print('time: ', time.time() - st)
 
-# Testing
-learner.set_epsilon(0)  # turn off exploration
-reward_list = []
-for _ in range(TESTING_EPISODES):
-    env.reset()
-    total_reward = 0
-    for _ in range(1000):
-        if ANIMATION:
-            env.render()
-            # time.sleep(0.1)
-
-        # get action
-        old_state = extract_state((x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2))
-        action = learner.get_action(old_state)
-
-        # one step
-        observation, reward, done, info = env.step(action)
-        (x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = observation
-
-        # time.sleep(0.1)
-        total_reward += reward
-        if done:
-            reward_list.append(total_reward)
-            # print("Episode finished after {} timesteps. Reward: {}".format(t + 1, total_reward))
-            break
-print('Average testing reward:', sum(reward_list) / len(reward_list), '(', TESTING_EPISODES, 'trials)')
+# # Testing
+# learner.set_epsilon(0)  # turn off exploration
+# reward_list = []
+# for ep in range(TESTING_EPISODES):
+#     (x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = env.reset()
+#     total_reward = 0
+#     for _ in range(1000):
+#         if ANIMATION:
+#             if ep < 10:
+#                 env.render()
+#
+#         # get action
+#         old_state = extract_state((x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2))
+#         action = learner.get_action(old_state)
+#
+#         # one step
+#         observation, reward, done, info = env.step(action)
+#         (x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = observation
+#
+#         total_reward += reward
+#         if done:
+#             print(total_reward)
+#             reward_list.append(total_reward)
+#             # print("Episode finished after {} timesteps. Reward: {}".format(t + 1, total_reward))
+#             break
+# print('Average testing reward:', sum(reward_list) / len(reward_list), '(', TESTING_EPISODES, 'trials )')
