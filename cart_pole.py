@@ -1,9 +1,7 @@
 import time
-
+import numpy as np
 import gym.spaces
-
 from helpers.q_learning import QLearningAgent
-from helpers.quantizer import Quantizer
 
 # important global parameters
 MAX_DIST = 2.5
@@ -16,16 +14,17 @@ LEARNING_RATE = 0.2
 DISCOUNT = 0.9
 EXPLORATION = 0.2
 BINS = 20
+NUMPY_BINS = BINS + 1
 ANIMATION = True
 
-ang_qtz = Quantizer(-MAX_RAD, MAX_RAD, BINS)  # -12 to 12 degree is -0.20944 to 0.20944 in radians
-cart_qtz = Quantizer(-MAX_CART_VEL, MAX_CART_VEL, BINS)
-tip_qtz = Quantizer(-MAX_TIP_VEL, MAX_TIP_VEL, BINS)
+ang_qtz = np.linspace(-MAX_RAD, MAX_RAD, BINS)  # -12 to 12 degree is -0.20944 to 0.20944 in radians
+cart_qtz = np.linspace(-MAX_CART_VEL, MAX_CART_VEL, BINS)
+tip_qtz = np.linspace(-MAX_TIP_VEL, MAX_TIP_VEL, BINS)
 
 (dist, cart_vel, ang, tip_vel) = (0, 0, 0, 0)
 
 env = gym.make('CartPole-v0')
-learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n), (BINS, BINS, env.action_space.n))
+learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n), (NUMPY_BINS, NUMPY_BINS, env.action_space.n))
 
 
 def extract_state(obs):
@@ -34,16 +33,16 @@ def extract_state(obs):
     :param obs: gym observation
     """
     (dist, cart_vel, ang, tip_vel) = obs
-    ang = ang_qtz.value_to_index(ang)
-    cart_vel = cart_qtz.value_to_index(cart_vel)
-    tip_vel = tip_qtz.value_to_index(tip_vel)
+    ang = int(np.digitize(ang, ang_qtz))
+    cart_vel = int(np.digitize(cart_vel, cart_qtz))
+    tip_vel = int(np.digitize(tip_vel, tip_qtz))
     return ang, cart_vel
 
 
 # Learning
 reward_list = [0]  # 0 is to avoid error when LEARNING_EPISODES is zero
 for _ in range(LEARNING_EPISODES):
-    env.reset()
+    (dist, cart_vel, ang, tip_vel) = env.reset()
     total_reward = 0
     for _ in range(1000):
         # get action
@@ -70,7 +69,7 @@ print('Average learning reward: ', sum(reward_list) / len(reward_list))
 learner.set_epsilon(0)  # turn off exploration
 reward_list = []
 for _ in range(TESTING_EPISODES):
-    env.reset()
+    (dist, cart_vel, ang, tip_vel) = env.reset()
     total_reward = 0
     for _ in range(1000):
         if ANIMATION:
