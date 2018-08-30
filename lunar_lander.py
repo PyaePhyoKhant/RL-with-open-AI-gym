@@ -54,13 +54,13 @@ def extract_state(obs):
     :param obs: gym observation
     """
     def qtz(val, lns):
-        bin = int(np.digitize(val, lns))
-        if bin == 0:
+        binn = int(np.digitize(val, lns))
+        if binn == 0:
             return 1
-        elif bin == BINS:
+        elif binn == BINS:
             return BINS - 1
         else:
-            return bin
+            return binn
 
     (x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = obs
     # x = qtz(x, x_qtz)
