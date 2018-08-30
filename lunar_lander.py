@@ -1,7 +1,6 @@
-import time
 import gym.spaces
 from helpers.q_learning import QLearningAgent
-from helpers.quantizer import Quantizer
+import numpy as np
 
 # important global parameters
 MAX_X = 0.3
@@ -16,25 +15,37 @@ MAX_UN = 1
 # special number for legs
 LEG1 = 4
 LEG2 = 5
-LEARNING_EPISODES = 3000
+LEARNING_EPISODES = 5000
 TESTING_EPISODES = 100
 LEARNING_RATE = 0.2
 DISCOUNT = 0.9
-EXPLORATION = 0.3
-BINS = 10
+EXPLORATION = 0.2
+TEMP_BINS = 8
+BINS = TEMP_BINS + 1
+NUMPY_BINS = TEMP_BINS + 1
 ANIMATION = True
+# train and test with learned data
+USE_EXTERNAL = True
 
-x_qtz = Quantizer(MIN_X, MAX_X, BINS)
-y_qtz = Quantizer(MIN_Y, MAX_Y, BINS)
-x_vel_qtz = Quantizer(MIN_X_VEL, MAX_X_VEL, BINS)
-y_vel_qtz = Quantizer(MIN_Y_VEL, MAX_Y_VEL, BINS)
-un1_qtz = Quantizer(-MAX_UN, MAX_UN, BINS)
-un2_qtz = Quantizer(-MAX_UN, MAX_UN, BINS)
+x_qtz = np.linspace(MIN_X, MAX_X, BINS)
+y_qtz = np.linspace(MIN_Y, MAX_Y, BINS)
+x_vel_qtz = np.linspace(MIN_X_VEL, MAX_X_VEL, BINS)
+y_vel_qtz = np.linspace(MIN_Y_VEL, MAX_Y_VEL, BINS)
+un1_qtz = np.linspace(-MAX_UN, MAX_UN, BINS)
+un2_qtz = np.linspace(-MAX_UN, MAX_UN, BINS)
 
 (x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = (0, 0, 0, 0, 0, 0, 0, 0)
 
 env = gym.make('LunarLander-v2')
-learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n))
+learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n), (2, 2, NUMPY_BINS, NUMPY_BINS, NUMPY_BINS, NUMPY_BINS, env.action_space.n))
+
+if USE_EXTERNAL:
+    if TEMP_BINS == 8:
+        learner.values = np.load('lunar_lander_knowledge_8_bins_numpy.npy')
+    elif TEMP_BINS == 10:
+        learner.values = np.load('lunar_lander_knowledge_10_bins_numpy.npy')
+    else:
+        raise AssertionError
 
 
 def extract_state(obs):
@@ -42,17 +53,24 @@ def extract_state(obs):
     extract state via this function so that it is DRY
     :param obs: gym observation
     """
+    def qtz(val, lns):
+        bin = int(np.digitize(val, lns))
+        if bin == 0:
+            return 1
+        elif bin == BINS:
+            return BINS - 1
+        else:
+            return bin
+
     (x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = obs
-    # x = x_qtz.round(x)
-    # y = y_qtz.round(y)
-    x_vel = x_vel_qtz.round(x_vel)
-    y_vel = y_vel_qtz.round(y_vel)
-    un1 = un1_qtz.round(unknown1)
-    un2 = un2_qtz.round(unknown2)
-    # if leg1 == 1:
-    #     x = LEG1
-    # if leg2 == 1:
-    #     y = LEG2
+    # x = qtz(x, x_qtz)
+    # y = qtz(y, y_qtz)
+    x_vel = qtz(x_vel, x_vel_qtz)
+    y_vel = qtz(y_vel, y_vel_qtz)
+    un1 = qtz(unknown1, un1_qtz)
+    un2 = qtz(unknown2, un2_qtz)
+    leg1 = int(leg1)
+    leg2 = int(leg2)
     return leg1, leg2, x_vel, y_vel, un1, un2
 
 
@@ -77,7 +95,7 @@ for i_episode in range(LEARNING_EPISODES+1):
 
         # get action
         old_state = extract_state((x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2))
-        action = learner.get_action(old_state)
+        action = learner.get_action(old_state, i_episode, LEARNING_EPISODES)
 
         # one step
         observation, reward, done, info = env.step(action)
@@ -99,6 +117,14 @@ for i_episode in range(LEARNING_EPISODES+1):
             # print("Episode finished after {} timesteps. Reward: {}".format(t + 1, total_reward))
             break
 print('Average learning reward: ', reward_summation / LEARNING_EPISODES)
+
+if USE_EXTERNAL:
+    if TEMP_BINS == 8:
+        np.save('lunar_lander_knowledge_8_bins_numpy', learner.values)
+    elif TEMP_BINS == 10:
+        np.save('lunar_lander_knowledge_10_bins_numpy', learner.values)
+    else:
+        raise AssertionError
 
 # # Testing
 # learner.set_epsilon(0)  # turn off exploration
