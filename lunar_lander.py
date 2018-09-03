@@ -15,17 +15,17 @@ MAX_UN = 1
 # special number for legs
 LEG1 = 4
 LEG2 = 5
-LEARNING_EPISODES = 5000
+LEARNING_EPISODES = 300
 TESTING_EPISODES = 100
 LEARNING_RATE = 0.2
 DISCOUNT = 0.9
-EXPLORATION = 0.2
-TEMP_BINS = 8
+EXPLORATION = 0.1
+TEMP_BINS = 9
 BINS = TEMP_BINS + 1
 NUMPY_BINS = TEMP_BINS + 1
 ANIMATION = True
 # train and test with learned data
-USE_EXTERNAL = True
+USE_EXTERNAL = False
 
 x_qtz = np.linspace(MIN_X, MAX_X, BINS)
 y_qtz = np.linspace(MIN_Y, MAX_Y, BINS)
@@ -37,11 +37,14 @@ un2_qtz = np.linspace(-MAX_UN, MAX_UN, BINS)
 (x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = (0, 0, 0, 0, 0, 0, 0, 0)
 
 env = gym.make('LunarLander-v2')
-learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n), (2, 2, NUMPY_BINS, NUMPY_BINS, NUMPY_BINS, NUMPY_BINS, env.action_space.n))
+learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n), (NUMPY_BINS, NUMPY_BINS, NUMPY_BINS, NUMPY_BINS, 2, 2, env.action_space.n))
 
 if USE_EXTERNAL:
+    print('loaded')
     if TEMP_BINS == 8:
         learner.values = np.load('lunar_lander_knowledge_8_bins_numpy.npy')
+    elif TEMP_BINS == 9:
+        learner.values = np.load('lunar_lander_knowledge_9_bins_numpy.npy')
     elif TEMP_BINS == 10:
         learner.values = np.load('lunar_lander_knowledge_10_bins_numpy.npy')
     else:
@@ -63,15 +66,15 @@ def extract_state(obs):
             return binn
 
     (x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = obs
-    # x = qtz(x, x_qtz)
-    # y = qtz(y, y_qtz)
+    x = qtz(x, x_qtz)
+    y = qtz(y, y_qtz)
     x_vel = qtz(x_vel, x_vel_qtz)
     y_vel = qtz(y_vel, y_vel_qtz)
     un1 = qtz(unknown1, un1_qtz)
     un2 = qtz(unknown2, un2_qtz)
     leg1 = int(leg1)
     leg2 = int(leg2)
-    return leg1, leg2, x_vel, y_vel, un1, un2
+    return x_vel, y_vel, un1, un2, leg1, leg2
 
 
 # Learning
@@ -119,8 +122,11 @@ for i_episode in range(LEARNING_EPISODES+1):
 print('Average learning reward: ', reward_summation / LEARNING_EPISODES)
 
 if USE_EXTERNAL:
+    print('saved')
     if TEMP_BINS == 8:
         np.save('lunar_lander_knowledge_8_bins_numpy', learner.values)
+    elif TEMP_BINS == 9:
+        np.save('lunar_lander_knowledge_9_bins_numpy', learner.values)
     elif TEMP_BINS == 10:
         np.save('lunar_lander_knowledge_10_bins_numpy', learner.values)
     else:

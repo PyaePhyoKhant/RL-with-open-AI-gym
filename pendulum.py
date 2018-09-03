@@ -1,3 +1,7 @@
+"""
+this is not working with numpy for now
+"""
+
 import time
 import gym.spaces
 from helpers.q_learning import QLearningAgent
@@ -8,7 +12,7 @@ import pickle
 MAX_COS_THETA = 1.0
 MAX_SIN_THETA = 1.0
 MAX_THETA_DOT = 8.0
-LEARNING_EPISODES = 1000
+LEARNING_EPISODES = 0
 TESTING_EPISODES = 10
 LEARNING_RATE = 0.2
 DISCOUNT = 0.9
@@ -16,7 +20,7 @@ EXPLORATION = 0.3
 BINS = 10
 ANIMATION = True
 # set True when skipping learning phase and load knowledge from external with 5000 LEARNING_EPISODES
-USE_EXTERNAL = False
+USE_EXTERNAL = True
 
 cos_qtz = Quantizer(-MAX_COS_THETA, MAX_COS_THETA, BINS)
 sin_qtz = Quantizer(-MAX_SIN_THETA, MAX_SIN_THETA, BINS)
