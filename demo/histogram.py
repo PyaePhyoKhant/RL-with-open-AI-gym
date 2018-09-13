@@ -21,5 +21,6 @@ names = ['x histogram', 'y histogram', 'x velocity histogram', 'y velocity histo
 for n in range(8):
     ary = np.array(data[n])
     plt.hist(ary, bins='auto')
+    plt.savefig(names[n] + '.png')
     plt.title(names[n])
     plt.show()
