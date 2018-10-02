@@ -12,17 +12,14 @@ MIN_X_VEL = -1
 MAX_Y_VEL = 0.5
 MIN_Y_VEL = -1.5
 MAX_UN = 1
-# special number for legs
-LEG1 = 4
-LEG2 = 5
-LEARNING_EPISODES = 300
+LEARNING_EPISODES = 1000
 TESTING_EPISODES = 100
-LEARNING_RATE = 0.2
+LEARNING_RATE = 0.3
 DISCOUNT = 0.9
 EXPLORATION = 0.1
-TEMP_BINS = 9
-BINS = TEMP_BINS + 1
-NUMPY_BINS = TEMP_BINS + 1
+REAL_BINS = 9
+BINS = REAL_BINS + 1
+NUMPY_BINS = REAL_BINS + 1
 ANIMATION = True
 # train and test with learned data
 USE_EXTERNAL = False
@@ -41,11 +38,11 @@ learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.ac
 
 if USE_EXTERNAL:
     print('loaded')
-    if TEMP_BINS == 8:
+    if REAL_BINS == 8:
         learner.values = np.load('lunar_lander_knowledge_8_bins_numpy.npy')
-    elif TEMP_BINS == 9:
+    elif REAL_BINS == 9:
         learner.values = np.load('lunar_lander_knowledge_9_bins_numpy.npy')
-    elif TEMP_BINS == 10:
+    elif REAL_BINS == 10:
         learner.values = np.load('lunar_lander_knowledge_10_bins_numpy.npy')
     else:
         raise AssertionError
@@ -123,11 +120,11 @@ print('Average learning reward: ', reward_summation / LEARNING_EPISODES)
 
 if USE_EXTERNAL:
     print('saved')
-    if TEMP_BINS == 8:
+    if REAL_BINS == 8:
         np.save('lunar_lander_knowledge_8_bins_numpy', learner.values)
-    elif TEMP_BINS == 9:
+    elif REAL_BINS == 9:
         np.save('lunar_lander_knowledge_9_bins_numpy', learner.values)
-    elif TEMP_BINS == 10:
+    elif REAL_BINS == 10:
         np.save('lunar_lander_knowledge_10_bins_numpy', learner.values)
     else:
         raise AssertionError
