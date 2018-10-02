@@ -1,6 +1,7 @@
 from collections import defaultdict
 import random
 import numpy as np
+from helpers.exploration import boltzmann
 
 
 class QLearningAgent:
@@ -31,7 +32,11 @@ class QLearningAgent:
         sample_value = reward + self.gamma * next_max_q
         self.values[(*old_state, action)] = (1 - self.alpha) * self.values[(*old_state, action)] + self.alpha * sample_value
 
-    def get_action(self, state):
+    def get_action(self, state, boltzmann_exploration=False):
+        if boltzmann_exploration:
+            q_values = self.values[state]
+            return boltzmann(q_values, self.epsilon)
+
         # choose random action (exploration)
         if random.random() < self.epsilon:
             return random.choice(self.actions)

@@ -22,8 +22,6 @@ REAL_BINS = 9
 BINS = REAL_BINS + 1
 NUMPY_BINS = REAL_BINS + 1
 ANIMATION = False
-# train and test with learned data
-USE_EXTERNAL = False
 
 x_qtz = np.linspace(MIN_X, MAX_X, BINS)
 y_qtz = np.linspace(MIN_Y, MAX_Y, BINS)
@@ -73,9 +71,12 @@ for i_episode in range(LEARNING_EPISODES+1):
         last_100_reward = []
     observation = env.reset()
     total_reward = 0
+
+    # comment this for constant epsilon
     # decreasing epsilon
     new_epsilon = 1 - (i_episode/LEARNING_EPISODES)
     learner.set_epsilon(new_epsilon)
+
     for _ in range(1000):
         # get action
         old_state = extract_state(observation)
@@ -107,7 +108,6 @@ for i_episode in range(TESTING_EPISODES):
 
         # one step
         observation, reward, done, info = env.step(action)
-        next_state = extract_state(observation)
 
         total_reward += reward
         if done:
