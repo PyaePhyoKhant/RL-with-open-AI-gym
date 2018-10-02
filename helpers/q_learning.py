@@ -31,14 +31,9 @@ class QLearningAgent:
         sample_value = reward + self.gamma * next_max_q
         self.values[(*old_state, action)] = (1 - self.alpha) * self.values[(*old_state, action)] + self.alpha * sample_value
 
-    def get_action(self, state, current_ep=None, total_ep=None):
+    def get_action(self, state):
         # choose random action (exploration)
-        if current_ep is not None and total_ep is not None:
-            threshold_for_random = (total_ep - current_ep) / total_ep
-        else:
-            threshold_for_random = self.epsilon
-
-        if random.random() < threshold_for_random:
+        if random.random() < self.epsilon:
             return random.choice(self.actions)
         # choose best action (exploitation)
         else:
