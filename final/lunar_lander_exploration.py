@@ -34,17 +34,6 @@ un2_qtz = np.linspace(-MAX_UN, MAX_UN, BINS)
 env = gym.make('LunarLander-v2')
 learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n), (NUMPY_BINS, NUMPY_BINS, NUMPY_BINS, NUMPY_BINS, 2, 2, env.action_space.n))
 
-# if USE_EXTERNAL:
-#     print('loaded')
-#     if REAL_BINS == 8:
-#         learner.values = np.load('lunar_lander_knowledge_8_bins_numpy.npy')
-#     elif REAL_BINS == 9:
-#         learner.values = np.load('lunar_lander_knowledge_9_bins_numpy.npy')
-#     elif REAL_BINS == 10:
-#         learner.values = np.load('lunar_lander_knowledge_10_bins_numpy.npy')
-#     else:
-#         raise AssertionError
-
 
 def extract_state(obs):
     """
@@ -103,18 +92,6 @@ for i_episode in range(LEARNING_EPISODES+1):
             last_100_reward.append(total_reward)
             reward_summation += total_reward
             break
-# print('Average learning reward: ', reward_summation / LEARNING_EPISODES)
-
-# if USE_EXTERNAL:
-#     print('saved')
-#     if REAL_BINS == 8:
-#         np.save('lunar_lander_knowledge_8_bins_numpy', learner.values)
-#     elif REAL_BINS == 9:
-#         np.save('lunar_lander_knowledge_9_bins_numpy', learner.values)
-#     elif REAL_BINS == 10:
-#         np.save('lunar_lander_knowledge_10_bins_numpy', learner.values)
-#     else:
-#         raise AssertionError
 
 # Testing
 learner.set_epsilon(0)
