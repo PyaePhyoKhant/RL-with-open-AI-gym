@@ -15,13 +15,11 @@ DISCOUNT = 0.9
 EXPLORATION = 0.2
 BINS = 20
 NUMPY_BINS = BINS + 1
-ANIMATION = True
+ANIMATION = False
 
 ang_qtz = np.linspace(-MAX_RAD, MAX_RAD, BINS)  # -12 to 12 degree is -0.20944 to 0.20944 in radians
 cart_qtz = np.linspace(-MAX_CART_VEL, MAX_CART_VEL, BINS)
 tip_qtz = np.linspace(-MAX_TIP_VEL, MAX_TIP_VEL, BINS)
-
-(dist, cart_vel, ang, tip_vel) = (0, 0, 0, 0)
 
 env = gym.make('CartPole-v0')
 learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n), (NUMPY_BINS, NUMPY_BINS, env.action_space.n))
@@ -42,19 +40,19 @@ def extract_state(obs):
 # Learning
 reward_list = [0]  # 0 is to avoid error when LEARNING_EPISODES is zero
 for _ in range(LEARNING_EPISODES):
-    (dist, cart_vel, ang, tip_vel) = env.reset()
+    observation = env.reset()
     total_reward = 0
     for _ in range(1000):
         # get action
-        old_state = extract_state((dist, cart_vel, ang, tip_vel))
+        old_state = extract_state(observation)
         action = learner.get_action(old_state)
 
         # one step
         observation, reward, done, info = env.step(action)
-        (dist, cart_vel, ang, tip_vel) = observation
-        next_state = extract_state((dist, cart_vel, ang, tip_vel))
+        next_state = extract_state(observation)
 
         # update learner
+        (dist, cart_vel, ang, tip_vel) = observation
         reward -= abs(ang) * 10  # this increase average score significantly
         learner.update(old_state, action, next_state, reward)
 
@@ -69,7 +67,7 @@ print('Average learning reward: ', sum(reward_list) / len(reward_list))
 learner.set_epsilon(0)  # turn off exploration
 reward_list = []
 for _ in range(TESTING_EPISODES):
-    (dist, cart_vel, ang, tip_vel) = env.reset()
+    observation = env.reset()
     total_reward = 0
     for _ in range(1000):
         if ANIMATION:
@@ -77,17 +75,15 @@ for _ in range(TESTING_EPISODES):
             time.sleep(0.1)
 
         # get action
-        old_state = extract_state((dist, cart_vel, ang, tip_vel))
+        old_state = extract_state(observation)
         action = learner.get_action(old_state)
 
         # one step
         observation, reward, done, info = env.step(action)
-        (dist, cart_vel, ang, tip_vel) = observation
 
         # time.sleep(0.1)
         total_reward += reward
         if done:
             reward_list.append(total_reward)
-            # print("Episode finished after {} timesteps. Reward: {}".format(t + 1, total_reward))
             break
 print('Average testing reward: ', sum(reward_list) / len(reward_list))
