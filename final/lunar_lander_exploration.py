@@ -1,6 +1,7 @@
 import gym.spaces
 from helpers.q_learning import QLearningAgent
 import numpy as np
+import winsound
 
 # important global parameters
 MAX_X = 0.3
@@ -108,11 +109,9 @@ for i_episode in range(TESTING_EPISODES):
         observation, reward, done, info = env.step(action)
         next_state = extract_state(observation)
 
-        # update learner
-        learner.update(old_state, action, next_state, reward)
-
         total_reward += reward
         if done:
             reward_summation += total_reward
             break
+winsound.Beep(1000, 250)
 print('Average testing reward: ', reward_summation / TESTING_EPISODES)
