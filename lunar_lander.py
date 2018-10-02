@@ -16,11 +16,11 @@ LEARNING_EPISODES = 1000
 TESTING_EPISODES = 100
 LEARNING_RATE = 0.3
 DISCOUNT = 0.9
-EXPLORATION = 0.1
+EXPLORATION = 1
 REAL_BINS = 9
 BINS = REAL_BINS + 1
 NUMPY_BINS = REAL_BINS + 1
-ANIMATION = True
+ANIMATION = False
 # train and test with learned data
 USE_EXTERNAL = False
 
@@ -30,8 +30,6 @@ x_vel_qtz = np.linspace(MIN_X_VEL, MAX_X_VEL, BINS)
 y_vel_qtz = np.linspace(MIN_Y_VEL, MAX_Y_VEL, BINS)
 un1_qtz = np.linspace(-MAX_UN, MAX_UN, BINS)
 un2_qtz = np.linspace(-MAX_UN, MAX_UN, BINS)
-
-(x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = (0, 0, 0, 0, 0, 0, 0, 0)
 
 env = gym.make('LunarLander-v2')
 learner = QLearningAgent(env, LEARNING_RATE, DISCOUNT, EXPLORATION, range(env.action_space.n), (NUMPY_BINS, NUMPY_BINS, NUMPY_BINS, NUMPY_BINS, 2, 2, env.action_space.n))
@@ -83,7 +81,7 @@ for i_episode in range(LEARNING_EPISODES+1):
         print(str(i_episode) + '/' + str(LEARNING_EPISODES) + ' training episodes complete')
         print('current avg reward:', sum(last_100_reward) / (len(last_100_reward)+1))
         last_100_reward = []
-    (x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = env.reset()
+    observation = env.reset()
     total_reward = 0
     for _ in range(1000):
         # testing show
@@ -94,13 +92,12 @@ for i_episode in range(LEARNING_EPISODES+1):
                 env.render()
 
         # get action
-        old_state = extract_state((x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2))
-        action = learner.get_action(old_state, i_episode, LEARNING_EPISODES)
+        old_state = extract_state(observation)
+        action = learner.get_action(old_state)
 
         # one step
         observation, reward, done, info = env.step(action)
-        (x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2) = observation
-        next_state = extract_state((x, y, x_vel, y_vel, unknown1, unknown2, leg1, leg2))
+        next_state = extract_state(observation)
 
         # update learner
         learner.update(old_state, action, next_state, reward)
