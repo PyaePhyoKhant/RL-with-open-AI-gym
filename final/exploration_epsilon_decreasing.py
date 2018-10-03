@@ -63,6 +63,7 @@ def extract_state(obs):
 
 # Learning
 data = []
+avg = []
 total_reward = 0
 for i_episode in range(LEARNING_EPISODES+1):
     if i_episode % 100 == 0 and i_episode != 0:
@@ -87,10 +88,12 @@ for i_episode in range(LEARNING_EPISODES+1):
         total_reward += reward
         if done:
             data.append(total_reward)
+            if i_episode > 100:
+                avg.append(sum(data[-100:])/100)
             break
 
 with open('epsilon_decreasing.txt', 'w') as f:
-    for item in data:
+    for item in avg:
         f.write("%s\n" % item)
 
 winsound.Beep(1000, 250)
